@@ -1,0 +1,76 @@
+# Dependencies
+node_modules/
+**/node_modules/
+/.pnp
+.pnp.js
+yarn.lock
+package-lock.json
+
+# Testing
+/coverage
+**/coverage/
+
+# Next.js specific
+.next/
+out/
+.vercel
+next-env.d.ts
+pool-frontend/.next/
+pool-frontend/out/
+
+# Node.js backend
+pool-backend/dist/
+pool-backend/build/
+pool-backend/logs/
+pool-backend/*.log
+pool-backend/npm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+**/.env
+**/.env.*
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+debug.log
+
+# Build
+/build
+/dist
+**/build/
+**/dist/
+
+# Cache
+.cache/
+**/.cache/
+
+# Misc
+.DS_Store
+*.pem
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.project
+.settings/
+
+# Typescript
+*.tsbuildinfo
+
+# Serverless
+.serverless/
+.webpack/
+
+# Database
+*.sqlite
+*.db
+
+# Public uploads/storage that shouldn't be in git
+pool-backend/uploads/
+pool-frontend/public/uploads/
