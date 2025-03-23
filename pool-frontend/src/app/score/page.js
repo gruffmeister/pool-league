@@ -1,11 +1,11 @@
-'use client';
+"use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@radix-ui/react-select";
 import { v4 } from "uuid";
 
-const ScorePage = () => {
+const ScorePageContent = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({
     teamName: "",
@@ -15,6 +15,7 @@ const ScorePage = () => {
   const searchParams = useSearchParams();
   const sessionKey = searchParams.get('sessionKey');
   const [subSessionKey, setSubSessionKey] = useState(searchParams.get('subSessionKey'));
+  const [alertCount, setAlertCount] = useState(0)
 
   const [ssid, setSsid] = useState();
 
@@ -72,61 +73,87 @@ const ScorePage = () => {
   };
 
   const handleBlur = async () => {
-    if (subSessionKey) {
-      const response = await fetch(`/api/saveMatchResult?sessionKey=${sessionKey}&subSessionKey=${subSessionKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+    const sessionDate = new Date(sessionData.date)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0); 
 
-      if (response.ok) {
-        console.log("Data saved successfully");
-      } else {
-        console.error("Error saving data");
-      }
-
+    console.log(sessionDate)
+    console.log(today)
+    if (sessionDate < today) {
+      if (alertCount === 0) {
+        alert("You cannot save data for a past date.");
+        setAlertCount(1)
+      } 
     }
     else {
-      const response = await fetch(`/api/saveMatchResult?sessionKey=${sessionKey}&subSessionKey=${ssid}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+      if (subSessionKey) {
+        const response = await fetch(`/api/saveMatchResult?sessionKey=${sessionKey}&subSessionKey=${subSessionKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
 
-      if (response.ok) {
-        console.log("Data saved successfully");
-      } else {
-        console.error("Error saving data");
+        if (response.ok) {
+          console.log("Data saved successfully");
+        } else {
+          console.error("Error saving data");
+        }
+
+      }
+      else {
+        const response = await fetch(`/api/saveMatchResult?sessionKey=${sessionKey}&subSessionKey=${ssid}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+          console.log("Data saved successfully");
+        } else {
+          console.error("Error saving data");
+        }
       }
     }
   }
 
   const handleSubmit = async () => {
-    if (subSessionKey) {
-      const response = await fetch(`/api/saveMatchResult?sessionKey=${sessionKey}&subSessionKey=${subSessionKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+    const sessionDate = new Date(sessionData.date)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0); 
 
-      if (response.ok) {
-        console.log("Data saved successfully");
-      } else {
-        console.error("Error saving data");
-      }
-
+    if (sessionDate < today) {
+      if (alertCount === 0) {
+        alert("You cannot save data for a past date.");
+        setAlertCount(1)
+      } 
     }
     else {
-      const response = await fetch(`/api/saveMatchResult?sessionKey=${sessionKey}&subSessionKey=${ssid}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+      if (subSessionKey) {
+        const response = await fetch(`/api/saveMatchResult?sessionKey=${sessionKey}&subSessionKey=${subSessionKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
 
-      if (response.ok) {
-        console.log("Data saved successfully");
-      } else {
-        console.error("Error saving data");
+        if (response.ok) {
+          console.log("Data saved successfully");
+        } else {
+          console.error("Error saving data");
+        }
+
+      }
+      else {
+        const response = await fetch(`/api/saveMatchResult?sessionKey=${sessionKey}&subSessionKey=${ssid}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+          console.log("Data saved successfully");
+        } else {
+          console.error("Error saving data");
+        }
       }
     }
   };
@@ -176,6 +203,14 @@ const ScorePage = () => {
         <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded">Submit</button>
       </form>
     </div>
+  );
+};
+
+const ScorePage = () => {
+  return (
+    <Suspense fallback={<div>Loading page...</div>}>
+      <ScorePageContent />
+    </Suspense>
   );
 };
 
