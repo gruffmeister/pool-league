@@ -1,4 +1,4 @@
-import TitlePage from './title'
+import TitlePage from "./title";
 
 export default function Home() {
   return (
