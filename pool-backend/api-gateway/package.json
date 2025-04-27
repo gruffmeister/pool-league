@@ -1,0 +1,27 @@
+{
+  "name": "api-gateway",
+  "version": "1.0.0",
+  "description": "Pool league api gateway",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gruffmeister/pool-league.git"
+  },
+  "author": "GMeister",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gruffmeister/pool-league/issues"
+  },
+  "homepage": "https://github.com/gruffmeister/pool-league#readme",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.797.0",
+    "@aws-sdk/credential-providers": "^3.797.0",
+    "@aws-sdk/lib-dynamodb": "^3.797.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0"
+  }
+}
