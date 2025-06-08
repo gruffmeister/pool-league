@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import SessionProviderWrapper from '../components/sessionProviderWrapper';
 import "./globals.css";
 
 
@@ -27,14 +28,16 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body>
-        <div className="min-h-screen w-screen bg-gradient-to-b from-gray-50 to-gray-100">
-          <div className="flex w-full h-100 justify-center items-center">
-            {children}
+      <html lang="en">
+        <body>
+        <SessionProviderWrapper>
+          <div className="min-h-screen w-screen bg-gradient-to-b from-gray-50 to-gray-100">
+            <div className="flex w-full h-100 justify-center items-center">
+              {children}
+            </div>
           </div>
-        </div>
-      </body>
-    </html>
+          </SessionProviderWrapper>
+        </body>
+      </html>
   );
 }

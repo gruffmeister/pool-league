@@ -1,71 +1,80 @@
-"use client"
+'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@radix-ui/react-select";
-import { v4 } from "uuid";
+import { useState } from 'react';
+import Header from '@/components/header';
+import Footer from '@/components/footer';
+import TeamStandingsTable from './components/TeamStandingsTable';
+import PlayerStatsTable from './components/PlayerStatsTable';
 
-const ScorePageContent = () => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [resultData, setResultData] = useState({})
-  const [division, setDivision] = useState(1)
+export default function StatsPage() {
+  const [activeTab, setActiveTab] = useState('teams');
+  const [division, setDivision] = useState('all');
 
-  const updateQueryParam = (paramName, paramValue) => {
-    // Create a new URLSearchParams object based on the current params
-    const params = new URLSearchParams(searchParams.toString());
-    
-    // Set the new parameter
-    params.set(paramName, paramValue);
-    
-    // Push the new URL with updated query params (without causing a page refresh)
-    const newUrl = `${window.location.pathname}?${params.toString()}`;
-    router.push(newUrl, { scroll: false });
-  };
-
-  useEffect(() => {
-    const fetchData = async () => {
-    try {
-        const response = await fetch(`/api/getResultData?division=${division}`);
-        const data = await response.json();
-        if (data) {
-        setResultData(data);
-        }  
-    } catch (error) {
-        console.error('Error fetching result data:', error);
-    }
-    };
-
-    fetchData();
-  }, [division]);
-  
-  const handleChange = async (divValue) => {
-    
-    setDivision(parseInt(divValue))
-  }
+  const handleTabClick = (tab) => setActiveTab(tab);
+  const handleDivisionChange = (e) => setDivision(e.target.value);
 
   return (
-    <div className="max-w-lg mx-auto p-4">
-      <div>
-      <h1 className="text-xl font-bold mb-4">Results Page</h1>
-      </div>
-      <h2 className="text-xl font-bold mb-4">Select Division</h2>
-      <select name="division" value={division} onChange={(e) => handleChange(e.target.value) } onBlur={() => handleBlur()}>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-    </select>
-      
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
+      <Header />
+
+      <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        {/* Breadcrumb */}
+        <div className="text-sm text-muted-foreground">
+          <span className="hover:underline cursor-pointer" onClick={() => location.href = '/'}>Home</span> / Stats
+        </div>
+
+        {/* Title & Division Filter */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <h2 className="text-2xl sm:text-3xl font-semibold">League Statistics</h2>
+
+          <select
+            value={division}
+            onChange={handleDivisionChange}
+            className="px-3 py-2 border border-gray-300 rounded bg-white text-sm w-full sm:w-auto"
+          >
+            <option value="all">All Divisions</option>
+            <option value="1">Division 1</option>
+            <option value="2">Division 2</option>
+            <option value="3">Division 3</option>
+            <option value="4">Division 4</option>
+          </select>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
+          <button
+            onClick={() => handleTabClick('teams')}
+            className={`px-4 py-2 rounded font-medium text-sm sm:text-base ${
+              activeTab === 'teams'
+                ? 'bg-accent text-accent-foreground'
+                : 'bg-muted text-muted-foreground hover:bg-muted/70'
+            }`}
+          >
+            Teams
+          </button>
+          <button
+            onClick={() => handleTabClick('players')}
+            className={`px-4 py-2 rounded font-medium text-sm sm:text-base ${
+              activeTab === 'players'
+                ? 'bg-accent text-accent-foreground'
+                : 'bg-muted text-muted-foreground hover:bg-muted/70'
+            }`}
+          >
+            Players
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <div className="bg-white rounded-lg shadow p-4 overflow-x-auto">
+          {activeTab === 'teams' ? (
+            <TeamStandingsTable division={division} />
+          ) : (
+            <PlayerStatsTable division={division} />
+          )}
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
-};
-
-const ScorePage = () => {
-  return (
-    <Suspense fallback={<div>Loading page...</div>}>
-      <ScorePageContent />
-    </Suspense>
-  );
-};
-
-export default ScorePage;
+}

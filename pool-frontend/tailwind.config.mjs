@@ -48,7 +48,10 @@ export default {
   				'3': 'hsl(var(--chart-3))',
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
-  			}
+  			},
+			poolgreen: '#006400',
+			gold: '#D4AF37',
+			navy: '#1F2937',
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
