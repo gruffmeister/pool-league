@@ -1,5 +1,4 @@
-// src/pages/api/users/lookup/route.js (or src/app/api/users/lookup/route.js if in /app)
-import { DynamoDBClient, GetItemCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb';
 import { NextResponse } from 'next/server';
 
 const client = new DynamoDBClient({ region: 'eu-west-2' });
@@ -8,27 +7,29 @@ export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const email = searchParams.get('email');
 
-  if (!email) return NextResponse.json({ message: 'Email required' }, { status: 400 });
+  if (!email) {
+    return NextResponse.json({ message: 'Email required' }, { status: 400 });
+  }
 
   try {
-    const result = await client.send(
-      new GetItemCommand({
-        TableName: 'pool-league-users',
-        Key: {
-          email: { S: email }
-        }
-      })
-    );
+    const scanCommand = new ScanCommand({
+      TableName: 'pool-league-users',
+      FilterExpression: 'email = :emailVal',
+      ExpressionAttributeValues: {
+        ':emailVal': { S: email }
+      }
+    });
 
-    if (!result.Item) return NextResponse.json({ message: 'Not found' }, { status: 404 });
+    const data = await client.send(scanCommand);
+    const user = data.Items?.[0];
 
-    const user = {
-      email: result.Item.email.S,
-      name: result.Item.name?.S || '',
-      team: result.Item.team?.S || ''
-    };
+    if (!user) return NextResponse.json({ message: 'User not found' }, { status: 404 });
 
-    return NextResponse.json(user);
+    return NextResponse.json({
+      email: user.email.S,
+      name: user.name?.S || '',
+      team: user.team?.S || ''
+    });
   } catch (err) {
     console.error('Error fetching user:', err);
     return NextResponse.json({ message: 'Server error' }, { status: 500 });
