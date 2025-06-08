@@ -23,7 +23,7 @@ export default function Header() {
 
           {session ? (
             <>
-              <span className="hidden sm:inline">Welcome, {session.user.email}</span>
+              <span className="hidden sm:inline">Welcome, {session.user.username}</span>
               <button
                 onClick={() => signOut()}
                 className="hover:underline bg-red-500 px-2 py-1 rounded text-white text-sm"

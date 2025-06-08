@@ -25,7 +25,7 @@ export const authOptions = {
         const user = data.Items?.[0];
 
         if (user && user.password?.S === password) {
-          return { id: user.id.S, email: user.email.S };
+          return { id: user.id.S, email: user.email.S, username: user.username.S };
         }
 
         return null;
@@ -34,5 +34,17 @@ export const authOptions = {
   ],
   pages: {
     signIn: '/login',
-  }
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.username = user.username;
+      }
+      return token;
+        },
+        async session({ session, token }) {
+        session.user.username = token.username;
+        return session;
+        },
+    }
 };

@@ -7,7 +7,7 @@ const client = new DynamoDBClient({ region: 'eu-west-2' });
 export async function POST(req) {
   try {
     const body = await req.json(); // 👈 Extract JSON from the request
-    const { email, password } = body;
+    const { email, password, username, fullName } = body;
 
     if (!email || !password) {
       return NextResponse.json({ message: 'Missing fields' }, { status: 400 });
@@ -17,6 +17,8 @@ export async function POST(req) {
       id: { S: uuidv4() },
       email: { S: email },
       password: { S: password }, // Note: should hash in real apps
+      username: { S: username },
+      fullName: { S: fullName },
       createdAt: { S: new Date().toISOString() },
     };
 
