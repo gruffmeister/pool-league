@@ -1,10 +1,23 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 
 export default function Header() {
   const { data: session } = useSession();
+
+  const [teamName, setTeamName] = useState(null);
+
+  useEffect(() => {
+    const fetchTeam = async () => {
+      if (!session?.user?.email) return;
+      const res = await fetch(`/api/users/lookup?email=${session.user.email}`);
+      const data = await res.json();
+      setTeamName(data.team || null);
+    };
+    fetchTeam();
+  }, [session]);
 
   return (
     <header className="bg-green-900 text-white py-4 shadow-md">
@@ -24,6 +37,7 @@ export default function Header() {
           {session ? (
             <>
               <span className="hidden sm:inline">Welcome, {session.user.username}</span>
+              {teamName && <span className="italic">Team: {teamName}</span>}
               <button
                 onClick={() => signOut()}
                 className="hover:underline bg-red-500 px-2 py-1 rounded text-white text-sm"

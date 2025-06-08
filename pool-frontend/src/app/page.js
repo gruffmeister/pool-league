@@ -3,8 +3,23 @@
 import Link from 'next/link';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
+import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 
 export default function HomePage() {
+  const { data: session } = useSession();
+  const [teamName, setTeamName] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!session?.user?.email) return;
+      const res = await fetch(`/api/users/lookup?email=${session.user.email}`);
+      const data = await res.json();
+      setTeamName(data.team || null);
+    };
+    fetchUser();
+  }, [session]);
+
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       {/* Header */}
@@ -27,6 +42,23 @@ export default function HomePage() {
               Start New Match
             </button>
           </Link>
+          {session ? (
+            <p><strong>Logged in as:</strong> {session.user.username || session.user.email}</p>) : null}
+            {teamName ? (
+              <p><strong>Team:</strong> {teamName}</p>
+            ) : (
+              <p>You are not part of a team yet.</p>
+            )}
+
+            {!teamName && (
+              <Link
+                href="/teams/create"
+                className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Create New Team
+              </Link>
+            )}
+
         </div>
       </main>
 
