@@ -22,7 +22,7 @@ export default function HomePage() {
               View Stats
             </button>
           </Link>
-          <Link href="/score">
+          <Link href="/match/new">
             <button className="bg-secondary text-secondary-foreground px-6 py-3 rounded hover:bg-green-700">
               Start New Match
             </button>
