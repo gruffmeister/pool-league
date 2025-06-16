@@ -29,14 +29,20 @@ const TitlePage = () => {
         const teamsData = await teamsRes.json();
         const userData = await userRes.json();
   
+        if (!Array.isArray(teamsData) || !userData?.team) {
+          console.warn('Teams or user data missing');
+          return;
+        }
+  
         setTeams(teamsData);
   
-        // Find team ID by matching team name
+        // Find team by name only after confirming teamsData is an array
         const userTeam = teamsData.find((team) => team.teamName === userData.team);
-        if (userTeam) {
+  
+        if (userTeam?.id) {
           setHomeTeamId(userTeam.id);
         } else {
-          console.warn('Team name not found in team list');
+          console.warn(`Team "${userData.team}" not found in list`);
         }
       } catch (err) {
         console.error('Error loading teams or user info', err);
@@ -47,6 +53,7 @@ const TitlePage = () => {
       fetchTeamsAndUser();
     }
   }, [session]);
+  
   
 
   const handleChange = (e) => {

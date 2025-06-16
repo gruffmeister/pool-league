@@ -11,7 +11,7 @@ const ScorePageContent = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({
     teamName: "",
-    scores: Array(12).fill({ player: "a", result: "W" }),
+    scores: Array(12).fill({ player: "", result: "" }),
   });
   const [sessionData, setSessionData] = useState({})
   const searchParams = useSearchParams();
