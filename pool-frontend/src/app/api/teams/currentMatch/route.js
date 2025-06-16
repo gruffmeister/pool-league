@@ -10,6 +10,8 @@ import {
     try {
       const body = await req.json();
       const { sessionKey, teamIds } = body;
+      const firstTeam = body.firstTeam;
+      const secTeam = body.secTeam;
   
       if (!sessionKey || !Array.isArray(teamIds) || teamIds.length !== 2) {
         return NextResponse.json({ message: 'Missing or invalid input' }, { status: 400 });
@@ -25,7 +27,7 @@ import {
           UpdateExpression: 'SET currentMatch = :sessionKey, homeAway = :home',
           ExpressionAttributeValues: {
             ':sessionKey': { S: sessionKey },
-            ':home': { S: 'home' },
+            ':home': { S: firstTeam },
           },
         })
       );
@@ -38,7 +40,7 @@ import {
           UpdateExpression: 'SET currentMatch = :sessionKey, homeAway = :away',
           ExpressionAttributeValues: {
             ':sessionKey': { S: sessionKey },
-            ':away': { S: 'away' },
+            ':away': { S: secTeam },
           },
         })
       );

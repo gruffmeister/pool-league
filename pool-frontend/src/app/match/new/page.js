@@ -80,6 +80,10 @@ const TitlePage = () => {
         throw new Error('Failed to generate sessionKey');
       }
 
+      secondTeam = "away"
+      if (formData.homeaway == "away") {
+          secondTeam = "home"
+      }
       // Step 2: Update both teams with the sessionKey
       const updateRes = await fetch('/api/teams/currentMatch', {
         method: 'POST',
@@ -87,6 +91,8 @@ const TitlePage = () => {
         body: JSON.stringify({
           sessionKey: data.sessionKey,
           teamIds: [homeTeamId, awayTeamId],
+          firstTeam: formData.homeaway,
+          secTeam: secondTeam
         }),
       });
 
@@ -170,6 +176,21 @@ const TitlePage = () => {
                   {team.teamName}
                 </option>
               ))}
+          </select>
+        </div>
+
+        <div>
+        <label htmlFor="matchType" className="block text-sm font-medium text-gray-700">Home or Away</label>
+          <select
+            name="homeaway"
+            value={formData.homeaway}
+            onChange={handleChange}
+            required
+            className="mt-2 p-2 w-full border border-gray-300 rounded-md"
+          >
+
+            <option value="home">Home</option>
+            <option value="away">Away</option>
           </select>
         </div>
 
