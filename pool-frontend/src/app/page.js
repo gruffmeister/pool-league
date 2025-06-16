@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 export default function HomePage() {
   const { data: session } = useSession();
   const [teamName, setTeamName] = useState(null);
+  const [captain, setCaptain] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -16,6 +17,7 @@ export default function HomePage() {
       const res = await fetch(`/api/users/lookup?email=${session.user.email}`);
       const data = await res.json();
       setTeamName(data.team || null);
+      setCaptain(data.isCaptain || false); // from your own DB, not session
     };
     fetchUser();
   }, [session]);
@@ -43,21 +45,38 @@ export default function HomePage() {
             </button>
           </Link>
           {session ? (
-            <p><strong>Logged in as:</strong> {session.user.username || session.user.email}</p>) : null}
+            <div><p><strong>Logged in as:</strong> {session.user.username || session.user.email}</p>
+            <Link
+                href="/teams"
+                className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >View Teams</Link>
+              {!teamName && (
+                <Link
+                  href="/teams/create"
+                  className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >
+                  Create New Team
+                </Link>
+              )}
+            </div>) : null}
             {teamName ? (
               <p><strong>Team:</strong> {teamName}</p>
             ) : (
               <p>You are not part of a team yet.</p>
             )}
 
-            {!teamName && (
-              <Link
-                href="/teams/create"
+            
+            
+            {captain ? <div><p><strong>You are the captain of </strong> {teamName}</p>
+            <Link
+                href="/teams/edit"
                 className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
               >
-                Create New Team
+                Edit Your Team
               </Link>
-            )}
+            </div>
+             : 
+              <p>You are not a captain</p>}
 
         </div>
       </main>

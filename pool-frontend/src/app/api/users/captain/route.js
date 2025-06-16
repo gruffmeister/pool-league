@@ -14,15 +14,16 @@ export async function GET() {
     const users = result.Items || [];
 
     // Filter out users who already have a team assigned
-    const availableUsers = users
-      .filter((user) => !user.team?.S)
+    const availableCaptains = users
+      .filter((user) => user.isCaptain != true)
       .map((user) => ({
         id: user.id.S,
         name: user.fullName?.S || '',
+        username: user.username?.S,
         email: user.email.S,
       }));
 
-    return NextResponse.json(availableUsers, { status: 200 });
+    return NextResponse.json(availableCaptains, { status: 200 });
   } catch (error) {
     console.error('Error fetching users:', error);
     return NextResponse.json({ message: 'Failed to fetch users' }, { status: 500 });

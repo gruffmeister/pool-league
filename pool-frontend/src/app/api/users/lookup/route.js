@@ -27,8 +27,9 @@ export async function GET(req) {
 
     return NextResponse.json({
       email: user.email.S,
-      name: user.name?.S || '',
-      team: user.team?.S || ''
+      name: user.fullName?.S || '',
+      team: user.team?.S || '',
+      isCaptain: user.isCaptain?.BOOL || false
     });
   } catch (err) {
     console.error('Error fetching user:', err);

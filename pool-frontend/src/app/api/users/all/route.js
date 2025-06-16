@@ -8,23 +8,19 @@ export async function GET() {
     const result = await client.send(
       new ScanCommand({
         TableName: 'pool-league-users',
+        ProjectionExpression: 'id, fullName, email',
       })
     );
 
-    const users = result.Items || [];
+    const users = result.Items.map((item) => ({
+      id: item.id.S,
+      name: item.fullName?.S || '',
+      email: item.email?.S || '',
+    }));
 
-    // Filter out users who already have a team assigned
-    const availableUsers = users
-      .filter((user) => !user.team?.S)
-      .map((user) => ({
-        id: user.id.S,
-        name: user.fullName?.S || '',
-        email: user.email.S,
-      }));
-
-    return NextResponse.json(availableUsers, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching users:', error);
+    return NextResponse.json(users);
+  } catch (err) {
+    console.error('Error fetching all users:', err);
     return NextResponse.json({ message: 'Failed to fetch users' }, { status: 500 });
   }
 }

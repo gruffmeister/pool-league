@@ -35,17 +35,27 @@ export async function POST(req) {
       Item: newTeam
     }));
 
-    // Update each player with the team name
+    // Update each player with the team name and set isCaptain for the captain
     for (const playerId of players) {
+      const isCaptain = playerId === captain;
+
       await client.send(new UpdateItemCommand({
         TableName: 'pool-league-users',
         Key: { id: { S: playerId } },
-        UpdateExpression: 'SET team = :teamName',
-        ExpressionAttributeValues: {
-          ':teamName': { S: teamName }
-        }
+        UpdateExpression: isCaptain
+          ? 'SET team = :teamName, isCaptain = :isCaptain'
+          : 'SET team = :teamName',
+        ExpressionAttributeValues: isCaptain
+          ? {
+              ':teamName': { S: teamName },
+              ':isCaptain': { BOOL: true }
+            }
+          : {
+              ':teamName': { S: teamName }
+            }
       }));
     }
+
 
     return NextResponse.json({ message: 'Team created successfully' }, { status: 200 });
 

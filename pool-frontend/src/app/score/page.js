@@ -2,6 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Header from '@/components/header';
+import Footer from '@/components/footer';
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@radix-ui/react-select";
 import { v4 } from "uuid";
 
@@ -161,6 +163,7 @@ const ScorePageContent = () => {
 
   return (
     <div className="max-w-lg mx-auto p-4">
+      <Header />
       <div>
       <h1 className="text-xl font-bold mb-4">Scorecard</h1>
       <p>Using session key: {sessionKey}</p>
@@ -202,6 +205,7 @@ const ScorePageContent = () => {
         ))}
         <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded">Submit</button>
       </form>
+      <Footer />
     </div>
   );
 };

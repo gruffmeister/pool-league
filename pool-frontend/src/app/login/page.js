@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Header from '@/components/header';
+import Footer from '@/components/footer';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');

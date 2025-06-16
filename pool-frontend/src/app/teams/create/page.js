@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-
+import Header from '@/components/header';
+import Footer from '@/components/footer';
 export default function CreateTeamPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function CreateTeamPage() {
     players: [],
   });
   const [availablePlayers, setAvailablePlayers] = useState([]);
+  const [availableCaptains, setAvailableCaptains] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
   // Redirect if not logged in
@@ -27,6 +29,13 @@ export default function CreateTeamPage() {
     fetch('/api/users/available')
       .then((res) => res.json())
       .then(setAvailablePlayers)
+      .catch((err) => console.error('Error fetching players:', err));
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/users/captain')
+      .then((res) => res.json())
+      .then(setAvailableCaptains)
       .catch((err) => console.error('Error fetching players:', err));
   }, []);
 
@@ -49,10 +58,17 @@ export default function CreateTeamPage() {
     e.preventDefault();
     setSubmitting(true);
 
+    const payload = {
+      ...form,
+      players: form.players.includes(form.captain)
+        ? form.players
+        : [...form.players, form.captain], // ensure captain is in players list
+    };
+
     const res = await fetch('/api/teams/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify(payload),
     });
 
     if (res.ok) {
@@ -66,6 +82,7 @@ export default function CreateTeamPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-4">
+      <Header />
       <h1 className="text-2xl font-bold mb-6">Create a New Team</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -88,15 +105,23 @@ export default function CreateTeamPage() {
           className="w-full border p-2 rounded"
         />
 
-        <input
-          type="text"
+        <select
           name="captain"
-          placeholder="Captain Name"
           value={form.captain}
           onChange={handleChange}
           required
           className="w-full border p-2 rounded"
-        />
+        >
+          <option value="" disabled>
+            Select Captain
+          </option>
+          {availableCaptains.map((captain) => (
+            <option key={captain.id} value={captain.id}>
+              {captain.name || captain.username}
+            </option>
+          ))}
+        </select>
+
 
         <input
           type="tel"
@@ -132,6 +157,7 @@ export default function CreateTeamPage() {
           {submitting ? 'Creating...' : 'Create Team'}
         </button>
       </form>
+      <Footer />
     </div>
   );
 }

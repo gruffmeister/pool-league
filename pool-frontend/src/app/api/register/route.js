@@ -19,6 +19,7 @@ export async function POST(req) {
       password: { S: password }, // Note: should hash in real apps
       username: { S: username },
       fullName: { S: fullName },
+      isCaptain: { BOOL: false },
       createdAt: { S: new Date().toISOString() },
     };
 
