@@ -8,15 +8,45 @@ export default function Header() {
   const { data: session } = useSession();
 
   const [teamName, setTeamName] = useState(null);
+  const [scoreCardLink, setScoreCardLink] = useState("/score")
+  const [teams, setTeams] = useState(null)
 
   useEffect(() => {
-    const fetchTeam = async () => {
-      if (!session?.user?.email) return;
-      const res = await fetch(`/api/users/lookup?email=${session.user.email}`);
-      const data = await res.json();
-      setTeamName(data.team || null);
+    const fetchTeamsAndUser = async () => {
+      try {
+        if (!session?.user?.email) return;
+        const [teamsRes, userRes] = await Promise.all([
+          fetch('/api/teams/list'),
+          fetch(`/api/users/lookup?email=${session?.user?.email}`),
+        ]);
+  
+        
+        const teamsData = await teamsRes.json();
+        const userData = await userRes.json();
+
+        setTeamName(userData.team || null);
+        if (!Array.isArray(teamsData) || !userData?.team) {
+          console.warn('Teams or user data missing');
+          return;
+        }
+
+        setTeams(teamsData);
+  
+        // Find team by name only after confirming teamsData is an array
+        const userTeam = teamsData.find((team) => team.teamName === userData.team);
+
+        
+        const link = '/score?sessionKey=' + userTeam.currentMatch + '&subSessionKey=' + userTeam.homeAway
+        setScoreCardLink(link)
+          
+      } catch (err) {
+        console.error('Error loading teams or user info', err);
+      }
     };
-    fetchTeam();
+  
+    if (session?.user?.email) {
+      fetchTeamsAndUser();
+    }
   }, [session]);
 
   return (
@@ -30,7 +60,7 @@ export default function Header() {
           <Link href="/stats" className="hover:underline">
             Stats
           </Link>
-          <Link href="/score" className="hover:underline">
+          <Link href={scoreCardLink} className="hover:underline">
             Scorecard
           </Link>
 

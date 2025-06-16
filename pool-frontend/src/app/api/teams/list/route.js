@@ -16,6 +16,8 @@ export async function GET() {
       captain: item.captain?.S || '',
       captainPhone: item.captainPhone?.S || '',
       players: item.players?.L?.map((p) => p.S) || [],
+      homeAway: item.homeAway?.S || '',
+      currentMatch: item.currentMatch?.S || ''
     }));
 
     return NextResponse.json(teams);

@@ -99,7 +99,7 @@ const TitlePage = () => {
       if (!updateRes.ok) throw new Error('Failed to update team match info');
 
       // Step 3: Navigate to score entry
-      router.push(`/score?sessionKey=${data.sessionKey}&subSessionKey=home`);
+      router.push(`/score?sessionKey=${data.sessionKey}&subSessionKey=${formData.homeaway}`);
     } catch (error) {
       console.error('Error submitting form:', error);
     } finally {
