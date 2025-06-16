@@ -1,70 +1,81 @@
-"use client"
+'use client';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
-import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@radix-ui/react-select";
-import { v4 } from "uuid";
+import { v4 as uuidv4 } from 'uuid';
 
 const ScorePageContent = () => {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    teamName: "",
-    scores: Array(12).fill({ player: "", result: "" }),
-  });
-  const [sessionData, setSessionData] = useState({})
   const searchParams = useSearchParams();
+  const { data: session } = useSession();
+
   const sessionKey = searchParams.get('sessionKey');
   const [subSessionKey, setSubSessionKey] = useState(searchParams.get('subSessionKey'));
-  const [alertCount, setAlertCount] = useState(0)
-
   const [ssid, setSsid] = useState();
+  const [alertCount, setAlertCount] = useState(0);
+  const [sessionData, setSessionData] = useState({});
+  const [teamName, setTeamName] = useState('');
+  const [teamPlayers, setTeamPlayers] = useState([]);
+
+  const [formData, setFormData] = useState({
+    teamName: '',
+    scores: Array(12).fill({ player: '', player2: '', result: '' }),
+  });
 
   const updateQueryParam = (paramName, paramValue) => {
-    // Create a new URLSearchParams object based on the current params
     const params = new URLSearchParams(searchParams.toString());
-    
-    // Set the new parameter
     params.set(paramName, paramValue);
-    
-    // Push the new URL with updated query params (without causing a page refresh)
     const newUrl = `${window.location.pathname}?${params.toString()}`;
     router.push(newUrl, { scroll: false });
   };
 
   useEffect(() => {
-    if (sessionKey) {
-      // Fetch data from DynamoDB using sessionKey
-      const fetchData = async () => {
-        try {
-          const response = await fetch(`/api/getFormData?sessionKey=${sessionKey}`);
-          const data = await response.json();
-          if (data) {
-            setSessionData(data);
-          }
-          if (subSessionKey) {
-            if (data["matchResult"]?.[subSessionKey]) {
-                  setFormData(data["matchResult"]?.[subSessionKey])
-              }
-          }
-          else {
-            const newSubSession = v4()
-            setSsid(newSubSession)
-            updateQueryParam('subSessionKey', newSubSession)
-          }
-        } catch (error) {
-          console.error('Error fetching form data:', error);
-        }
-      };
+    const fetchData = async () => {
+      try {
+        // Get match session data
+        const sessionRes = await fetch(`/api/getFormData?sessionKey=${sessionKey}`);
+        const sessionJson = await sessionRes.json();
+        if (sessionJson) setSessionData(sessionJson);
 
+        // Handle subSession key
+        if (subSessionKey && sessionJson.matchResult?.[subSessionKey]) {
+          const result = sessionJson.matchResult[subSessionKey];
+          setFormData({
+            teamName: result.teamName || '',
+            scores: result.scores.map((s) => ({
+              player: s.player || '',
+              player2: s.player2 || '',
+              result: s.result || '',
+            })),
+          });
+        } else {
+          const newId = uuidv4();
+          setSsid(newId);
+          updateQueryParam('subSessionKey', newId);
+        }
+
+        // Fetch user's team info via NextAuth session
+        const userRes = await fetch(`/api/users/lookup?email=${session?.user?.email}`);
+        const userData = await userRes.json();
+        setTeamName(userData.team);
+
+        // Get list of all players in that team
+        const allUsersRes = await fetch('/api/users/all');
+        const allUsers = await allUsersRes.json();
+        const sameTeamPlayers = allUsers.filter((u) => u.team === userData.team);
+        setTeamPlayers(sameTeamPlayers);
+      } catch (err) {
+        console.error('Error loading session or user/team data:', err);
+      }
+    };
+
+    if (sessionKey && session?.user?.email) {
       fetchData();
     }
-  }, [sessionKey]);
-
-  if (!sessionData.date) return <div>Loading...</div>;
-
-  
+  }, [sessionKey, session]);
 
   const handleChange = (index, field, value) => {
     setFormData((prev) => {
@@ -74,148 +85,147 @@ const ScorePageContent = () => {
     });
   };
 
+  const saveMatch = async () => {
+    const saveKey = subSessionKey || ssid;
+    const res = await fetch(`/api/saveMatchResult?sessionKey=${sessionKey}&subSessionKey=${saveKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...formData, teamName }),
+    });
+    return res.ok;
+  };
+
   const handleBlur = async () => {
-    const sessionDate = new Date(sessionData.date)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0); 
-
-    console.log(sessionDate)
-    console.log(today)
-    if (sessionDate < today) {
-      if (alertCount === 0) {
-        alert("You cannot save data for a past date.");
-        setAlertCount(1)
-      } 
-    }
-    else {
-      if (subSessionKey) {
-        const response = await fetch(`/api/saveMatchResult?sessionKey=${sessionKey}&subSessionKey=${subSessionKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
-
-        if (response.ok) {
-          console.log("Data saved successfully");
-        } else {
-          console.error("Error saving data");
-        }
-
-      }
-      else {
-        const response = await fetch(`/api/saveMatchResult?sessionKey=${sessionKey}&subSessionKey=${ssid}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
-
-        if (response.ok) {
-          console.log("Data saved successfully");
-        } else {
-          console.error("Error saving data");
-        }
-      }
-    }
-  }
-
-  const handleSubmit = async () => {
-    const sessionDate = new Date(sessionData.date)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0); 
+    const sessionDate = new Date(sessionData.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     if (sessionDate < today) {
       if (alertCount === 0) {
-        alert("You cannot save data for a past date.");
-        setAlertCount(1)
-      } 
-    }
-    else {
-      if (subSessionKey) {
-        const response = await fetch(`/api/saveMatchResult?sessionKey=${sessionKey}&subSessionKey=${subSessionKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
-
-        if (response.ok) {
-          console.log("Data saved successfully");
-        } else {
-          console.error("Error saving data");
-        }
-
+        alert('You cannot save data for a past date.');
+        setAlertCount(1);
       }
-      else {
-        const response = await fetch(`/api/saveMatchResult?sessionKey=${sessionKey}&subSessionKey=${ssid}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
-
-        if (response.ok) {
-          console.log("Data saved successfully");
-        } else {
-          console.error("Error saving data");
-        }
-      }
+    } else {
+      await saveMatch();
     }
   };
-  
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const sessionDate = new Date(sessionData.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (sessionDate < today) {
+      if (alertCount === 0) {
+        alert('You cannot save data for a past date.');
+        setAlertCount(1);
+      }
+    } else {
+      const success = await saveMatch();
+      if (success) console.log('Data saved successfully');
+      else console.error('Error saving data');
+    }
+  };
+
+  if (!sessionData.date) return <div>Loading...</div>;
 
   return (
     <div className="max-w-lg mx-auto p-4">
       <Header />
       <div>
-      <h1 className="text-xl font-bold mb-4">Scorecard</h1>
-      <p>Using session key: {sessionKey}</p>
-      {/* Render form data here */}
-      <p>Date: {sessionData.date}</p>
-      <p>Division: {sessionData.division}</p>
-      <p>Match Type: {sessionData.matchType}</p>
-      {/* More form fields here */}
+        <h1 className="text-xl font-bold mb-4">Scorecard</h1>
+        <p>Session Key: {sessionKey}</p>
+        <p>Date: {sessionData.date}</p>
+        <p>Division: {sessionData.division}</p>
+        <p>Match Type: {sessionData.matchType}</p>
       </div>
-      <h2 className="text-xl font-bold mb-4">Enter Match Scores</h2>
+
+      <h2 className="text-xl font-bold my-4">Enter Match Scores</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
-          placeholder="Team Name"
-          value={formData.teamName}
-          onChange={(e) => setFormData({ ...formData, teamName: e.target.value })}
-          className="w-full p-2 border rounded"
-          required
+          value={teamName}
+          disabled
+          className="w-full p-2 border rounded bg-gray-100 cursor-not-allowed"
         />
+
         {formData.scores.map((entry, index) => (
-          <div key={index} className="flex gap-2">
-            <input
-              type="text"
-              placeholder={index === 4 || index === 9 ? "Doubles" : "Singles"}
-              value={entry.player}
-              onChange={(e) => handleChange(index, "player", e.target.value)}
-              onBlur={() => handleBlur()}
-              className="flex-1 p-2 border rounded"
+          <div key={index} className="flex gap-2 items-center">
+            {index === 4 || index === 9 ? (
+              <>
+                <select
+                  value={entry.player}
+                  onChange={(e) => handleChange(index, 'player', e.target.value)}
+                  onBlur={handleBlur}
+                  className="flex-1 p-2 border rounded"
+                  required
+                >
+                  <option value="">Player 1</option>
+                  {teamPlayers.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name || p.email}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={entry.player2}
+                  onChange={(e) => handleChange(index, 'player2', e.target.value)}
+                  onBlur={handleBlur}
+                  className="flex-1 p-2 border rounded"
+                  required
+                >
+                  <option value="">Player 2</option>
+                  {teamPlayers.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name || p.email}
+                    </option>
+                  ))}
+                </select>
+              </>
+            ) : (
+              <select
+                value={entry.player}
+                onChange={(e) => handleChange(index, 'player', e.target.value)}
+                onBlur={handleBlur}
+                className="flex-1 p-2 border rounded"
+                required
+              >
+                <option value="">Select Player</option>
+                {teamPlayers.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name || p.email}
+                  </option>
+                ))}
+              </select>
+            )}
+            <select
+              value={entry.result}
+              onChange={(e) => handleChange(index, 'result', e.target.value)}
+              onBlur={handleBlur}
+              className="w-24 p-2 border rounded"
               required
-            />
-            <select name="result" value={entry.result} onChange={(e) => handleChange(index, "result", e.target.value) } onBlur={() => handleBlur()}>
-              <option value="">Select</option>
+            >
+              <option value="">Result</option>
               <option value="W">W</option>
               <option value="L">L</option>
             </select>
-
-
           </div>
         ))}
-        <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded">Submit</button>
+
+        <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded">
+          Submit
+        </button>
       </form>
       <Footer />
     </div>
   );
 };
 
-const ScorePage = () => {
-  return (
-    <Suspense fallback={<div>Loading page...</div>}>
-      <ScorePageContent />
-    </Suspense>
-  );
-};
+const ScorePage = () => (
+  <Suspense fallback={<div>Loading page...</div>}>
+    <ScorePageContent />
+  </Suspense>
+);
 
 export default ScorePage;
