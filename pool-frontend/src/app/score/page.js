@@ -7,6 +7,8 @@ import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { v4 as uuidv4 } from 'uuid';
 
+const defaultScore = { player: '', player2: '', result: '' };
+
 const ScorePageContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -14,15 +16,14 @@ const ScorePageContent = () => {
 
   const sessionKey = searchParams.get('sessionKey');
   const [subSessionKey, setSubSessionKey] = useState(searchParams.get('subSessionKey'));
-  const [ssid, setSsid] = useState();
+  const [ssid, setSsid] = useState('');
   const [alertCount, setAlertCount] = useState(0);
   const [sessionData, setSessionData] = useState({});
   const [teamName, setTeamName] = useState('');
   const [teamPlayers, setTeamPlayers] = useState([]);
-
   const [formData, setFormData] = useState({
     teamName: '',
-    scores: Array(12).fill({ player: '', player2: '', result: '' }),
+    scores: Array(12).fill({ ...defaultScore }),
   });
 
   const updateQueryParam = (paramName, paramValue) => {
@@ -34,60 +35,62 @@ const ScorePageContent = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!session?.user?.email || !sessionKey) return;
+
       try {
-        // Get match session data
         const sessionRes = await fetch(`/api/getFormData?sessionKey=${sessionKey}`);
         const sessionJson = await sessionRes.json();
-        if (sessionJson) setSessionData(sessionJson);
+        setSessionData(sessionJson || {});
 
-        // Handle subSession key
-        if (subSessionKey && sessionJson.matchResult?.[subSessionKey]) {
+        const userRes = await fetch(`/api/users/lookup?email=${session.user.email}`);
+        const userData = await userRes.json();
+        console.log(userData)
+        setTeamName(userData.team || '');
+
+        const allUsersRes = await fetch('/api/users/all');
+        const allUsers = await allUsersRes.json();
+        const sameTeamPlayers = allUsers.filter((u) => u.team === teamName);
+        setTeamPlayers(sameTeamPlayers);
+
+        // Set form data
+        if (subSessionKey && sessionJson?.matchResult?.[subSessionKey]) {
           const result = sessionJson.matchResult[subSessionKey];
           setFormData({
-            teamName: result.teamName || '',
-            scores: result.scores.map((s) => ({
-              player: s.player || '',
-              player2: s.player2 || '',
-              result: s.result || '',
+            teamName: result.teamName || userData.team || '',
+            scores: (result.scores || []).map((s) => ({
+              player: s?.player || '',
+              player2: s?.player2 || '',
+              result: s?.result || '',
             })),
           });
         } else {
           const newId = uuidv4();
           setSsid(newId);
+          setFormData({
+            teamName: userData.team || '',
+            scores: Array(12).fill({ ...defaultScore }),
+          });
           updateQueryParam('subSessionKey', newId);
         }
-
-        // Fetch user's team info via NextAuth session
-        const userRes = await fetch(`/api/users/lookup?email=${session?.user?.email}`);
-        const userData = await userRes.json();
-        setTeamName(userData.team);
-
-        // Get list of all players in that team
-        const allUsersRes = await fetch('/api/users/all');
-        const allUsers = await allUsersRes.json();
-        const sameTeamPlayers = allUsers.filter((u) => u.team === userData.team);
-        setTeamPlayers(sameTeamPlayers);
       } catch (err) {
         console.error('Error loading session or user/team data:', err);
       }
     };
 
-    if (sessionKey && session?.user?.email) {
-      fetchData();
-    }
+    fetchData();
   }, [sessionKey, session]);
 
   const handleChange = (index, field, value) => {
     setFormData((prev) => {
-      const updatedScores = [...prev.scores];
-      updatedScores[index] = { ...updatedScores[index], [field]: value };
-      return { ...prev, scores: updatedScores };
+      const scores = [...prev.scores];
+      scores[index] = { ...scores[index], [field]: value };
+      return { ...prev, scores };
     });
   };
 
   const saveMatch = async () => {
-    const saveKey = subSessionKey || ssid;
-    const res = await fetch(`/api/saveMatchResult?sessionKey=${sessionKey}&subSessionKey=${saveKey}`, {
+    const key = subSessionKey || ssid;
+    const res = await fetch(`/api/saveMatchResult?sessionKey=${sessionKey}&subSessionKey=${key}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...formData, teamName }),
@@ -100,11 +103,9 @@ const ScorePageContent = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    if (sessionDate < today) {
-      if (alertCount === 0) {
-        alert('You cannot save data for a past date.');
-        setAlertCount(1);
-      }
+    if (sessionDate < today && alertCount === 0) {
+      alert('You cannot save data for a past date.');
+      setAlertCount(1);
     } else {
       await saveMatch();
     }
@@ -116,11 +117,9 @@ const ScorePageContent = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    if (sessionDate < today) {
-      if (alertCount === 0) {
-        alert('You cannot save data for a past date.');
-        setAlertCount(1);
-      }
+    if (sessionDate < today && alertCount === 0) {
+      alert('You cannot save data for a past date.');
+      setAlertCount(1);
     } else {
       const success = await saveMatch();
       if (success) console.log('Data saved successfully');
@@ -152,10 +151,10 @@ const ScorePageContent = () => {
 
         {formData.scores.map((entry, index) => (
           <div key={index} className="flex gap-2 items-center">
-            {index === 4 || index === 9 ? (
+            {(index === 4 || index === 9) ? (
               <>
                 <select
-                  value={entry.player}
+                  value={entry.player || ''}
                   onChange={(e) => handleChange(index, 'player', e.target.value)}
                   onBlur={handleBlur}
                   className="flex-1 p-2 border rounded"
@@ -169,7 +168,7 @@ const ScorePageContent = () => {
                   ))}
                 </select>
                 <select
-                  value={entry.player2}
+                  value={entry.player2 || ''}
                   onChange={(e) => handleChange(index, 'player2', e.target.value)}
                   onBlur={handleBlur}
                   className="flex-1 p-2 border rounded"
@@ -185,7 +184,7 @@ const ScorePageContent = () => {
               </>
             ) : (
               <select
-                value={entry.player}
+                value={entry.player || ''}
                 onChange={(e) => handleChange(index, 'player', e.target.value)}
                 onBlur={handleBlur}
                 className="flex-1 p-2 border rounded"
@@ -200,7 +199,7 @@ const ScorePageContent = () => {
               </select>
             )}
             <select
-              value={entry.result}
+              value={entry.result || ''}
               onChange={(e) => handleChange(index, 'result', e.target.value)}
               onBlur={handleBlur}
               className="w-24 p-2 border rounded"
