@@ -134,7 +134,7 @@ const TitlePage = () => {
             <option value="Stripes">Stripes</option>
             <option value="Spots">Spots</option>
           </select>
-
+        </div>
         <div>
           <label htmlFor="matchType" className="block text-sm font-medium text-gray-700">Match Type</label>
           <select
