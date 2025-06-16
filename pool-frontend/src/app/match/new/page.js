@@ -80,7 +80,7 @@ const TitlePage = () => {
         throw new Error('Failed to generate sessionKey');
       }
 
-      secondTeam = "away"
+      var secondTeam = "away"
       if (formData.homeaway == "away") {
           secondTeam = "home"
       }
