@@ -122,15 +122,18 @@ const TitlePage = () => {
         </div>
 
         <div>
-          <label htmlFor="division" className="block text-sm font-medium text-gray-700">Division</label>
-          <input
-            type="text"
+        <label htmlFor="matchType" className="block text-sm font-medium text-gray-700">Division</label>
+          <select
             name="division"
             value={formData.division}
             onChange={handleChange}
+            required
             className="mt-2 p-2 w-full border border-gray-300 rounded-md"
-          />
-        </div>
+          >
+            <option value="">Select Division</option>
+            <option value="Stripes">Stripes</option>
+            <option value="Spots">Spots</option>
+          </select>
 
         <div>
           <label htmlFor="matchType" className="block text-sm font-medium text-gray-700">Match Type</label>
