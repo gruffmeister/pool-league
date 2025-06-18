@@ -10,6 +10,7 @@ import {
     try {
       const body = await req.json();
       const { sessionKey, teamIds } = body;
+      console.log(body)
       const firstTeam = body.firstTeam;
       const secTeam = body.secTeam;
   

@@ -10,6 +10,7 @@ const TitlePage = () => {
     date: '',
     division: '',
     matchType: '',
+    homeaway: '',
   });
 
   const [homeTeamId, setHomeTeamId] = useState('');
