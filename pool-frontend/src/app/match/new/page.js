@@ -10,7 +10,7 @@ const TitlePage = () => {
     date: '',
     division: '',
     matchType: '',
-    homeaway: '',
+    homeaway: 'home',
   });
 
   const [homeTeamId, setHomeTeamId] = useState('');
@@ -66,41 +66,36 @@ const TitlePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
+  
+    const homeaway = formData.homeaway || 'home'; // fallback if it's empty
+  
     try {
-      // Step 1: Save form data to generate sessionKey
       const response = await fetch('/api/saveFormData', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, homeTeamId, awayTeamId }),
+        body: JSON.stringify({ ...formData, homeTeamId, awayTeamId, homeaway }),
       });
-
+  
       const data = await response.json();
-
-      if (!data.sessionKey) {
-        throw new Error('Failed to generate sessionKey');
-      }
-
-      var secondTeam = "away"
-      if (formData.homeaway == "away") {
-          secondTeam = "home"
-      }
-      // Step 2: Update both teams with the sessionKey
+  
+      if (!data.sessionKey) throw new Error('Failed to generate sessionKey');
+  
+      const secondTeam = homeaway === 'away' ? 'home' : 'away';
+  
       const updateRes = await fetch('/api/teams/currentMatch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sessionKey: data.sessionKey,
           teamIds: [homeTeamId, awayTeamId],
-          firstTeam: formData.homeaway,
+          firstTeam: homeaway,
           secTeam: secondTeam
         }),
       });
-
+  
       if (!updateRes.ok) throw new Error('Failed to update team match info');
-
-      // Step 3: Navigate to score entry
-      router.push(`/score?sessionKey=${data.sessionKey}&subSessionKey=${formData.homeaway}`);
+  
+      router.push(`/score?sessionKey=${data.sessionKey}&subSessionKey=${homeaway}`);
     } catch (error) {
       console.error('Error submitting form:', error);
     } finally {

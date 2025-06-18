@@ -15,7 +15,7 @@ const ScorePageContent = () => {
   const { data: session } = useSession();
 
   const sessionKey = searchParams.get('sessionKey');
-  const [subSessionKey, setSubSessionKey] = useState(searchParams.get('subSessionKey'));
+  const [subSessionKey, setSubSessionKey] = useState('');
   const [ssid, setSsid] = useState('');
   const [alertCount, setAlertCount] = useState(0);
   const [sessionData, setSessionData] = useState({});
@@ -34,6 +34,13 @@ const ScorePageContent = () => {
   };
 
   useEffect(() => {
+    const param = searchParams.get('subSessionKey');
+    if (param) {
+      setSubSessionKey(param);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     const fetchData = async () => {
       if (!session?.user?.email || !sessionKey) return;
 
@@ -44,12 +51,14 @@ const ScorePageContent = () => {
 
         const userRes = await fetch(`/api/users/lookup?email=${session.user.email}`);
         const userData = await userRes.json();
-        console.log(userData)
-        setTeamName(userData.team || '');
+        const actualTeamName = userData.team || '';
+        setTeamName(actualTeamName);
 
         const allUsersRes = await fetch('/api/users/all');
         const allUsers = await allUsersRes.json();
-        const sameTeamPlayers = allUsers.filter((u) => u.team === teamName);
+        console.log(allUsers)
+        const sameTeamPlayers = allUsers.filter((u) => u.team === actualTeamName);
+        console.log(sameTeamPlayers)
         setTeamPlayers(sameTeamPlayers);
 
         // Set form data
@@ -64,13 +73,10 @@ const ScorePageContent = () => {
             })),
           });
         } else {
-          const newId = uuidv4();
-          setSsid(newId);
           setFormData({
             teamName: userData.team || '',
             scores: Array(12).fill({ ...defaultScore }),
           });
-          updateQueryParam('subSessionKey', newId);
         }
       } catch (err) {
         console.error('Error loading session or user/team data:', err);
@@ -89,7 +95,7 @@ const ScorePageContent = () => {
   };
 
   const saveMatch = async () => {
-    const key = subSessionKey || ssid;
+    const key = subSessionKey;
     const res = await fetch(`/api/saveMatchResult?sessionKey=${sessionKey}&subSessionKey=${key}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

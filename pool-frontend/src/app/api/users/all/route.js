@@ -8,7 +8,7 @@ export async function GET() {
     const result = await client.send(
       new ScanCommand({
         TableName: 'pool-league-users',
-        ProjectionExpression: 'id, fullName, email',
+        ProjectionExpression: 'id, fullName, email, team',
       })
     );
 
@@ -16,6 +16,7 @@ export async function GET() {
       id: item.id.S,
       name: item.fullName?.S || '',
       email: item.email?.S || '',
+      team: item.team?.S || '',
     }));
 
     return NextResponse.json(users);
