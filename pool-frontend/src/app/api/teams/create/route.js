@@ -1,4 +1,4 @@
-import { DynamoDBClient, PutItemCommand, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, PutItemCommand, QueryCommand, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -19,13 +19,27 @@ export async function POST(req) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
 
+    const existingTeam = await client.send(
+      new QueryCommand({
+        TableName: 'pool-league-teams',
+        IndexName: 'teamName-index', // 🛑 Requires a GSI on email!
+        KeyConditionExpression: 'teamName = :e',
+        ExpressionAttributeValues: {
+          ':e': { S: teamName },
+        },
+      })
+    );
+
+    if (existingTeam.Count > 0) {
+      return NextResponse.json({ message: 'Team already registered' }, { status: 409 });
+    }
     // Save the team info
     const newTeam = {
       id: { S: uuidv4() },
-      teamName: { S: teamName },
-      location: { S: location || '' },
-      captain: { S: captain },
-      captainPhone: { S: captainPhone },
+      teamName: { S: teamName.trim() },
+      location: { S: location.trim() || '' },
+      captain: { S: captain.trim() },
+      captainPhone: { S: captainPhone.trim() },
       players: { L: players.map((id) => ({ S: id })) },
       createdAt: { S: new Date().toISOString() }
     };

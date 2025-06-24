@@ -7,8 +7,9 @@ const client = new DynamoDBClient({ region: 'eu-west-2' });
 export async function POST(req) {
   try {
     const body = await req.json(); // 👈 Extract JSON from the request
-    const { email, password, username, fullName } = body;
+    const { emailnorm, password, username, fullName } = body;
 
+    const email = emailnorm.toLowerCase()
     if (!email || !password) {
       return NextResponse.json({ message: 'Missing fields' }, { status: 400 });
     }
@@ -20,7 +21,7 @@ export async function POST(req) {
         IndexName: 'email-index', // 🛑 Requires a GSI on email!
         KeyConditionExpression: 'email = :e',
         ExpressionAttributeValues: {
-          ':e': { S: email },
+          ':e': { S: email.trim() },
         },
       })
     );
@@ -31,10 +32,10 @@ export async function POST(req) {
 
     const userItem = {
       id: { S: uuidv4() },
-      email: { S: email },
+      email: { S: email.trim() },
       password: { S: password }, // Note: should hash in real apps
-      username: { S: username },
-      fullName: { S: fullName },
+      username: { S: username.trim() },
+      fullName: { S: fullName.trim() },
       isCaptain: { BOOL: false },
       createdAt: { S: new Date().toISOString() },
     };

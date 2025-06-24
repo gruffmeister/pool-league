@@ -71,10 +71,12 @@ export default function CreateTeamPage() {
       body: JSON.stringify(payload),
     });
 
+    const data = await res.json();
+
     if (res.ok) {
       router.push('/');
     } else {
-      alert('Error creating team');
+      alert(`Team creation failed: ${data.message}`);
     }
 
     setSubmitting(false);

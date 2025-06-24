@@ -21,11 +21,12 @@ export default function RegisterPage() {
       alert('Please enter a valid email address.');
       return;
     }
-  
+    
+    const emailnorm = email
     const res = await fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, username, fullName }),
+      body: JSON.stringify({ emailnorm, password, username, fullName }),
     });
   
     const data = await res.json();
