@@ -14,6 +14,13 @@ export default function RegisterPage() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+
+     // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
   
     const res = await fetch('/api/register', {
       method: 'POST',
@@ -21,10 +28,12 @@ export default function RegisterPage() {
       body: JSON.stringify({ email, password, username, fullName }),
     });
   
+    const data = await res.json();
+
     if (res.ok) {
       router.push('/login');
     } else {
-      alert('Registration failed.');
+      alert(`Registration failed: ${data.message}`);
     }
   };
 

@@ -13,6 +13,22 @@ export async function POST(req) {
       return NextResponse.json({ message: 'Missing fields' }, { status: 400 });
     }
 
+     // Check for existing email
+     const existingUser = await client.send(
+      new QueryCommand({
+        TableName: 'pool-league-users',
+        IndexName: 'email-index', // 🛑 Requires a GSI on email!
+        KeyConditionExpression: 'email = :e',
+        ExpressionAttributeValues: {
+          ':e': { S: email },
+        },
+      })
+    );
+
+    if (existingUser.Count > 0) {
+      return NextResponse.json({ message: 'Email already registered' }, { status: 409 });
+    }
+
     const userItem = {
       id: { S: uuidv4() },
       email: { S: email },
