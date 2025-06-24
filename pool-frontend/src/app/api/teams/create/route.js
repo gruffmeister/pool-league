@@ -25,7 +25,7 @@ export async function POST(req) {
         IndexName: 'teamName-index', // 🛑 Requires a GSI on email!
         KeyConditionExpression: 'teamName = :e',
         ExpressionAttributeValues: {
-          ':e': { S: teamName },
+          ':e': { S: teamName.trim() },
         },
       })
     );
