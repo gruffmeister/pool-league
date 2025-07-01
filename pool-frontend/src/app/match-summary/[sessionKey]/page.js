@@ -13,6 +13,7 @@ export default function MatchSummaryPage() {
   const [awayResult, setAwayResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [teamPlayers, setTeamPlayers] = useState([]);
+  const [sessionData, setSessionData] = useState({});
 
   useEffect(() => {
     async function fetchMatchResults() {
@@ -56,6 +57,9 @@ export default function MatchSummaryPage() {
           <h2 className="text-xl font-semibold mb-2">
             {homeResult?.teamName || 'Home Team'}
           </h2>
+          <h2 className="text-xl font-semibold mb-2">
+            Win: {homeResult?.win} Loss: {homeResult?.loss}
+          </h2>
           {homeResult?.submitted ? (
             homeResult.scores.map((s, i) => (
               <div key={i} className="py-1 border-b">
@@ -70,6 +74,9 @@ export default function MatchSummaryPage() {
         <div className="border rounded p-4 shadow">
           <h2 className="text-xl font-semibold mb-2">
             {awayResult?.teamName || 'Away Team'}
+          </h2>
+          <h2 className="text-xl font-semibold mb-2">
+            Win: {homeResult?.win} Loss: {homeResult?.loss}
           </h2>
           {awayResult?.submitted ? (
             awayResult.scores.map((s, i) => (

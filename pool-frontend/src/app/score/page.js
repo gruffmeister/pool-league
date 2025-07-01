@@ -163,7 +163,7 @@ const ScorePageContent = () => {
     const res = await fetch(`/api/saveMatchResult?sessionKey=${sessionKey}&subSessionKey=${key}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...formData, "submittedBy": submittedBy, "submitted": submitted, teamName }),
+      body: JSON.stringify({ ...formData, "submittedBy": submittedBy, "submitted": submitted, teamName, "win" : winLoss.win, "loss" : winLoss.loss }),
     });
     return res;
   };
