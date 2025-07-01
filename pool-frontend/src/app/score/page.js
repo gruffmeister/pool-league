@@ -245,6 +245,20 @@ const ScorePageContent = () => {
     }
   };
 
+  const handleFocus = async () => {
+    const sessionDate = new Date(sessionData.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    setDataUpdate(0)
+
+    if (sessionDate < today && alertCount === 0) {
+      alert('You cannot save data for a past date.');
+      setAlertCount(1);
+    } else {
+      // Do Nothing
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const sessionDate = new Date(sessionData.date);
@@ -295,6 +309,7 @@ const ScorePageContent = () => {
                   value={entry.player || ''}
                   onChange={(e) => handleChange(index, 'player', e.target.value)}
                   onBlur={handleBlur}
+                  onFocus={handleFocus}
                   className="flex-1 p-2 border rounded"
                   required
                 >
@@ -309,6 +324,7 @@ const ScorePageContent = () => {
                   value={entry.player2 || ''}
                   onChange={(e) => handleChange(index, 'player2', e.target.value)}
                   onBlur={handleBlur}
+                  onFocus={handleFocus}
                   className="flex-1 p-2 border rounded"
                   required
                 >
@@ -325,6 +341,7 @@ const ScorePageContent = () => {
                 value={entry.player || ''}
                 onChange={(e) => handleChange(index, 'player', e.target.value)}
                 onBlur={handleBlur}
+                onFocus={handleFocus}
                 className="flex-1 p-2 border rounded"
                 required
               >
@@ -340,6 +357,7 @@ const ScorePageContent = () => {
               value={entry.result || ''}
               onChange={(e) => handleChange(index, 'result', e.target.value)}
               onBlur={handleBlur}
+              onFocus={handleFocus}
               className="w-24 p-2 border rounded"
               required
             >
