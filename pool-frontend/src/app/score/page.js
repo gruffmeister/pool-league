@@ -104,6 +104,36 @@ const ScorePageContent = () => {
   }, [sessionKey, session]);
 
   useEffect(() => {
+
+    const fetchUpdatedState = async () => {
+      if (!session?.user?.email || !sessionKey) return;
+
+      try {
+        const sessionRes = await fetch(`/api/getFormData?sessionKey=${sessionKey}`);
+        const sessionJson = await sessionRes.json();
+        setSessionData(sessionJson)
+
+        const userRes = await fetch(`/api/users/lookup?email=${session.user.email}`);
+        const userData = await userRes.json();
+        const actualTeamName = userData.team || '';
+        setTeamName(actualTeamName);
+
+        let opponentResult = null;
+
+        // Loop over all submitted subSessionKeys except this team's one
+        for (const [key, value] of Object.entries(sessionJson.matchResult || {})) {
+          if (key !== subSessionKey && value?.teamName !== actualTeamName) {
+            opponentResult = value;
+            break; // assume only one opponent result
+          }
+        }
+
+        setOpponentScores(opponentResult?.scores || Array(12).fill({ ...defaultScore }))
+
+      } catch (err) {
+        console.error('Error loading session or user/team data:', err);
+      }
+    }
     const counts = formData.scores.reduce(
       (acc, entry) => {
         if (entry.result === 'W') acc.win += 1;
@@ -114,6 +144,8 @@ const ScorePageContent = () => {
     );
   
     setWinLoss(counts);
+
+    fetchUpdatedState()
   }, [formData]);
 
   const handleChange = (index, field, value) => {
