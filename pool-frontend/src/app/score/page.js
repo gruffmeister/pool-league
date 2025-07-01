@@ -151,22 +151,12 @@ const ScorePageContent = () => {
         setOpponentScores(opponentResult?.scores || Array(12).fill({ ...defaultScore }))
 
         // Set form data
-        if (subSessionKey && sessionJson?.matchResult?.[subSessionKey]) {
-          const result = sessionJson.matchResult[subSessionKey];
-          setFormData({
-            teamName: result.teamName || userData.team || '',
-            scores: (result.scores || []).map((s) => ({
-              player: s?.player || '',
-              player2: s?.player2 || '',
-              result: s?.result || '',
-            })),
-          });
-        } else {
+       
           setFormData({
             teamName: userData.team || '',
             scores: Array(12).fill({ ...defaultScore }),
           });
-        }
+        
       } catch (err) {
         console.error('Error loading session or user/team data:', err);
       }
