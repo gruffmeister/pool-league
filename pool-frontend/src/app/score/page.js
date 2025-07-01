@@ -300,7 +300,7 @@ const ScorePageContent = () => {
               className="w-24 p-2 border rounded"
               required
             >
-              <option value="">Result</option>
+              <option value="" disabled={!me.isCaptain}>Result</option>
               <option
                 value="W"
                 disabled={Array.isArray(opponentScores) && opponentScores[index]?.result === 'W' || !me.isCaptain}
