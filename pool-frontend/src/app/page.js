@@ -18,6 +18,7 @@ export default function HomePage() {
       const data = await res.json();
       setTeamName(data.team || null);
       setCaptain(data.isCaptain || false); // from your own DB, not session
+      console.log(session)
     };
     fetchUser();
   }, [session]);

@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { getUserByEmail } from "@/lib/getUserByEmail"; // update this path
 
 export default NextAuth({
   providers: [
@@ -29,7 +30,14 @@ export default NextAuth({
   },
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.user = user;
+      if (user?.email) {
+        const dbUser = await getUserByEmail(user.email);
+        token.user = {
+          ...user,
+          isCaptain: dbUser?.isCaptain || false,
+          teamName: dbUser?.teamName || "",
+        };
+      }
       return token;
     },
     async session({ session, token }) {
