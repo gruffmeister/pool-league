@@ -26,6 +26,7 @@ const ScorePageContent = () => {
     teamName: '',
     scores: Array(12).fill({ ...defaultScore }),
   });
+  const [opponentScores, setOpponentScores] = useState(Array(12).fill({ ...defaultScore }))
 
   const updateQueryParam = (paramName, paramValue) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -64,6 +65,18 @@ const ScorePageContent = () => {
         const sameTeamPlayers = allUsers.filter((u) => u.team === actualTeamName);
         console.log(sameTeamPlayers)
         setTeamPlayers(sameTeamPlayers);
+
+        let opponentResult = null;
+
+        // Loop over all submitted subSessionKeys except this team's one
+        for (const [key, value] of Object.entries(sessionJson.matchResult || {})) {
+          if (key !== subSessionKey && value?.teamName !== actualTeamName) {
+            opponentResult = value;
+            break; // assume only one opponent result
+          }
+        }
+
+        setOpponentScores(opponentResult?.scores || Array(12).fill({ ...defaultScore }))
 
         // Set form data
         if (subSessionKey && sessionJson?.matchResult?.[subSessionKey]) {
@@ -235,8 +248,18 @@ const ScorePageContent = () => {
               required
             >
               <option value="">Result</option>
-              <option value="W">W</option>
-              <option value="L">L</option>
+              <option
+                value="W"
+                disabled={Array.isArray(opponentScores) && opponentScores[index]?.result === 'W'}
+              >
+                W
+              </option>
+              <option
+                value="L"
+                disabled={Array.isArray(opponentScores) && opponentScores[index]?.result === 'L'}
+              >
+                L
+              </option>
             </select>
           </div>
         ))}
