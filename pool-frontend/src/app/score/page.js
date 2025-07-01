@@ -21,6 +21,7 @@ const ScorePageContent = () => {
   const [sessionData, setSessionData] = useState({});
   const [teamName, setTeamName] = useState('');
   const [teamPlayers, setTeamPlayers] = useState([]);
+  const [winLoss, setWinLoss] = useState({"win": 0, "loss": 0})
   const [formData, setFormData] = useState({
     teamName: '',
     scores: Array(12).fill({ ...defaultScore }),
@@ -41,13 +42,16 @@ const ScorePageContent = () => {
   }, [searchParams]);
 
   useEffect(() => {
+
+    if (!session || !sessionKey) return;
+
     const fetchData = async () => {
       if (!session?.user?.email || !sessionKey) return;
 
       try {
         const sessionRes = await fetch(`/api/getFormData?sessionKey=${sessionKey}`);
         const sessionJson = await sessionRes.json();
-        setSessionData(sessionJson || {});
+        setSessionData(sessionJson)
 
         const userRes = await fetch(`/api/users/lookup?email=${session.user.email}`);
         const userData = await userRes.json();
@@ -85,6 +89,19 @@ const ScorePageContent = () => {
 
     fetchData();
   }, [sessionKey, session]);
+
+  useEffect(() => {
+    const counts = formData.scores.reduce(
+      (acc, entry) => {
+        if (entry.result === 'W') acc.win += 1;
+        if (entry.result === 'L') acc.loss += 1;
+        return acc;
+      },
+      { win: 0, loss: 0 }
+    );
+  
+    setWinLoss(counts);
+  }, [formData]);
 
   const handleChange = (index, field, value) => {
     setFormData((prev) => {
@@ -149,6 +166,7 @@ const ScorePageContent = () => {
         <p>Date: {sessionData.date}</p>
         <p>Division: {sessionData.division}</p>
         <p>Match Type: {sessionData.matchType}</p>
+        <p>Current Score: Win {winLoss.win} Loss {winLoss.loss}</p>
       </div>
 
       <h2 className="text-xl font-bold my-4">Enter Match Scores</h2>

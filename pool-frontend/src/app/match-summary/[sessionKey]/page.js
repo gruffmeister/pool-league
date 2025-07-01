@@ -12,9 +12,7 @@ export default function MatchSummaryPage() {
   const [homeResult, setHomeResult] = useState(null);
   const [awayResult, setAwayResult] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [teamName, setTeamName] = useState('');
   const [teamPlayers, setTeamPlayers] = useState([]);
-  const [sessionData, setSessionData] = useState({});
 
   useEffect(() => {
     async function fetchMatchResults() {
@@ -23,16 +21,9 @@ export default function MatchSummaryPage() {
         const sessionJson = await sessionRes.json();
         setSessionData(sessionJson || {});
 
-        const userRes = await fetch(`/api/users/lookup?email=${session.user.email}`);
-        const userData = await userRes.json();
-        const actualTeamName = userData.team || '';
-        setTeamName(actualTeamName);
-
         const allUsersRes = await fetch('/api/users/all');
         const allUsers = await allUsersRes.json();
         console.log(allUsers)
-        const sameTeamPlayers = allUsers.filter((u) => u.team === actualTeamName);
-        console.log(sameTeamPlayers)
         setTeamPlayers(allUsers);
 
         const res = await fetch(`/api/match-summary?sessionKey=${sessionKey}`);

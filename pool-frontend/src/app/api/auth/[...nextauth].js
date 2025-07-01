@@ -30,14 +30,7 @@ export default NextAuth({
   },
   callbacks: {
     async jwt({ token, user }) {
-      if (user?.email) {
-        const dbUser = await getUserByEmail(user.email);
-        token.user = {
-          ...user,
-          isCaptain: dbUser?.isCaptain || false,
-          teamName: dbUser?.teamName || "",
-        };
-      }
+      if (user) token.user = user;
       return token;
     },
     async session({ session, token }) {
