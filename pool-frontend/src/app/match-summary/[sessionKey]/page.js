@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import Header from '@/components/header';
+import Footer from '@/components/footer';
 
 export default function MatchSummaryPage() {
   const { sessionKey } = useParams();
@@ -21,17 +23,17 @@ export default function MatchSummaryPage() {
         const sessionJson = await sessionRes.json();
         setSessionData(sessionJson || {});
 
-        const userRes = await fetch(`/api/users/lookup?email=${session.user.email}`);
-        const userData = await userRes.json();
-        const actualTeamName = userData.team || '';
-        setTeamName(actualTeamName);
+        // const userRes = await fetch(`/api/users/lookup?email=${session.user.email}`);
+        // const userData = await userRes.json();
+        // const actualTeamName = userData.team || '';
+        // setTeamName(actualTeamName);
 
-        const allUsersRes = await fetch('/api/users/all');
-        const allUsers = await allUsersRes.json();
-        console.log(allUsers)
-        const sameTeamPlayers = allUsers.filter((u) => u.team === actualTeamName);
-        console.log(sameTeamPlayers)
-        setTeamPlayers(sameTeamPlayers);
+        // const allUsersRes = await fetch('/api/users/all');
+        // const allUsers = await allUsersRes.json();
+        // console.log(allUsers)
+        // const sameTeamPlayers = allUsers.filter((u) => u.team === actualTeamName);
+        // console.log(sameTeamPlayers)
+        // setTeamPlayers(sameTeamPlayers);
 
         const res = await fetch(`/api/match-summary?sessionKey=${sessionKey}`);
         const data = await res.json();
@@ -52,6 +54,8 @@ export default function MatchSummaryPage() {
   }
 
   return (
+    <div>
+    <Header />
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Match Summary</h1>
       <div className="grid grid-cols-2 gap-6">
@@ -63,10 +67,9 @@ export default function MatchSummaryPage() {
           {homeResult?.submitted ? (
             homeResult.scores.map((s, i) => (
               <div key={i} className="py-1 border-b">
-                {teamPlayers.filter((p) => p.id === s.player).name}: {s.result}
+                {s.player}: {s.result}
               </div>
-            ))
-          ) : (
+          ))) : (
             <p className="italic text-gray-500">Waiting for home team to submit...</p>
           )}
         </div>
@@ -87,6 +90,8 @@ export default function MatchSummaryPage() {
           )}
         </div>
       </div>
+    </div>
+    <Footer />
     </div>
   );
 }
