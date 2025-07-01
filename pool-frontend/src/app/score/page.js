@@ -235,7 +235,7 @@ const ScorePageContent = () => {
     const sessionDate = new Date(sessionData.date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    setDataUpdate(0)
+    //setDataUpdate(0)
 
     if (sessionDate < today && alertCount === 0) {
       alert('You cannot save data for a past date.');
@@ -291,10 +291,6 @@ const ScorePageContent = () => {
         <p>Match Type: {sessionData.matchType}</p>
         <p>Current Score: Win {winLoss.win} Loss {winLoss.loss}</p>
       </div>
-      <button onClick={handleFocus()} className="bg-secondary text-secondary-foreground px-6 py-3 rounded hover:bg-green-700">
-        Refresh Scorecard
-      </button>
-
       <h2 className="text-xl font-bold my-4">Enter Match Scores</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
