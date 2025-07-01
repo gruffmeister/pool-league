@@ -28,6 +28,10 @@ const ScorePageContent = () => {
   });
   const [opponentScores, setOpponentScores] = useState(Array(12).fill({ ...defaultScore }))
   const [tick, setTick] = useState(0);
+  const [refreshFlag, setRefreshFlag] = useState(0)
+  const [dataUpdate, setDataUpdate] = useState(0)
+
+  const [me, setMe] = useState({id: '', name: '', email: '', team: '', isCaptain: false})
 
   const updateQueryParam = (paramName, paramValue) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -66,6 +70,8 @@ const ScorePageContent = () => {
 
         const userRes = await fetch(`/api/users/lookup?email=${session.user.email}`);
         const userData = await userRes.json();
+        setMe(userData)
+        console.log(userData)
         const actualTeamName = userData.team || '';
         setTeamName(actualTeamName);
 
@@ -85,6 +91,9 @@ const ScorePageContent = () => {
             break; // assume only one opponent result
           }
         }
+
+        if (dataUpdate === 0)
+          setRefreshFlag(1)
 
         setOpponentScores(opponentResult?.scores || Array(12).fill({ ...defaultScore }))
 
@@ -111,7 +120,8 @@ const ScorePageContent = () => {
     };
 
     fetchData();
-  }, [sessionKey, session]);
+    setDataUpdate(1)
+  }, [sessionKey, session, refreshFlag]);
 
   useEffect(() => {
 
@@ -244,7 +254,7 @@ const ScorePageContent = () => {
                   className="flex-1 p-2 border rounded"
                   required
                 >
-                  <option value="">Player 1</option>
+                  <option value="" disabled={!me.isCaptain}>Player 1</option>
                   {teamPlayers.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name || p.email}
@@ -258,7 +268,7 @@ const ScorePageContent = () => {
                   className="flex-1 p-2 border rounded"
                   required
                 >
-                  <option value="">Player 2</option>
+                  <option value="" disabled={!me.isCaptain}>Player 2</option>
                   {teamPlayers.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name || p.email}
@@ -274,7 +284,7 @@ const ScorePageContent = () => {
                 className="flex-1 p-2 border rounded"
                 required
               >
-                <option value="">Select Player</option>
+                <option value="" disabled={!me.isCaptain}>Select Player</option>
                 {teamPlayers.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name || p.email}
@@ -292,13 +302,13 @@ const ScorePageContent = () => {
               <option value="">Result</option>
               <option
                 value="W"
-                disabled={Array.isArray(opponentScores) && opponentScores[index]?.result === 'W'}
+                disabled={Array.isArray(opponentScores) && opponentScores[index]?.result === 'W' || !me.isCaptain}
               >
                 W
               </option>
               <option
                 value="L"
-                disabled={Array.isArray(opponentScores) && opponentScores[index]?.result === 'L'}
+                disabled={Array.isArray(opponentScores) && opponentScores[index]?.result === 'L' || !me.isCaptain}
               >
                 L
               </option>

@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { Menu, X } from 'lucide-react'; // optional, for icons (Tailwind Hero Icons or Lucide)
 
 export default function Header() {
+  const router = useRouter();
   const { data: session } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const [teamName, setTeamName] = useState(null);
@@ -115,6 +117,8 @@ export default function Header() {
                 onClick={() => {
                   closeMenu();
                   signOut();
+                  router.push('/')
+
                 }}
                 className="hover:underline bg-red-500 px-2 py-1 rounded text-white text-sm"
               >
