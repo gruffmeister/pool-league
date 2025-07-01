@@ -96,12 +96,14 @@ const ScorePageContent = () => {
 
   const saveMatch = async () => {
     const key = subSessionKey;
+    const submittedBy = session.user.email
+    const submitted = true
     const res = await fetch(`/api/saveMatchResult?sessionKey=${sessionKey}&subSessionKey=${key}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...formData, teamName }),
+      body: JSON.stringify({ ...formData, "submittedBy": submittedBy, "submitted": submitted, teamName }),
     });
-    return res.ok;
+    return res;
   };
 
   const handleBlur = async () => {
@@ -128,7 +130,10 @@ const ScorePageContent = () => {
       setAlertCount(1);
     } else {
       const success = await saveMatch();
-      if (success) console.log('Data saved successfully');
+      if (success.ok && !success.error) {
+        router.push(`/match-summary/${sessionKey}`);
+      }
+      //if (success) console.log('Data saved successfully');
       else console.error('Error saving data');
     }
   };
