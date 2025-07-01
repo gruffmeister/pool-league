@@ -40,13 +40,13 @@ const ScorePageContent = () => {
     router.push(newUrl, { scroll: false });
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTick((prev) => prev + 1); // trigger re-render
-    }, 2000); // every 2 seconds
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setTick((prev) => prev + 1); // trigger re-render
+  //   }, 2000); // every 2 seconds
   
-    return () => clearInterval(interval); // cleanup
-  }, []);
+  //   return () => clearInterval(interval); // cleanup
+  // }, []);
 
   
   useEffect(() => {
@@ -174,6 +174,7 @@ const ScorePageContent = () => {
       scores[index] = { ...scores[index], [field]: value };
       return { ...prev, scores };
     });
+    setDataUpdate(0)
   };
 
   const saveMatch = async () => {
@@ -256,7 +257,7 @@ const ScorePageContent = () => {
                 >
                   <option value="" disabled={!me.isCaptain}>Player 1</option>
                   {teamPlayers.map((p) => (
-                    <option key={p.id} value={p.id}>
+                    <option disabled={!me.isCaptain} key={p.id} value={p.id}>
                       {p.name || p.email}
                     </option>
                   ))}
@@ -270,7 +271,7 @@ const ScorePageContent = () => {
                 >
                   <option value="" disabled={!me.isCaptain}>Player 2</option>
                   {teamPlayers.map((p) => (
-                    <option key={p.id} value={p.id}>
+                    <option disabled={!me.isCaptain} key={p.id} value={p.id}>
                       {p.name || p.email}
                     </option>
                   ))}
@@ -286,7 +287,7 @@ const ScorePageContent = () => {
               >
                 <option value="" disabled={!me.isCaptain}>Select Player</option>
                 {teamPlayers.map((p) => (
-                  <option key={p.id} value={p.id}>
+                  <option disabled={!me.isCaptain} key={p.id} value={p.id}>
                     {p.name || p.email}
                   </option>
                 ))}
