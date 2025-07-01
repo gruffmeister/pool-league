@@ -76,7 +76,7 @@ export default function MatchSummaryPage() {
             {awayResult?.teamName || 'Away Team'}
           </h2>
           <h2 className="text-xl font-semibold mb-2">
-            Win: {homeResult?.win} Loss: {homeResult?.loss}
+            Win: {awayResult?.win} Loss: {awayResult?.loss}
           </h2>
           {awayResult?.submitted ? (
             awayResult.scores.map((s, i) => (
