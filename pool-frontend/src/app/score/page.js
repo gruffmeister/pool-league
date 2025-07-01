@@ -291,6 +291,9 @@ const ScorePageContent = () => {
         <p>Match Type: {sessionData.matchType}</p>
         <p>Current Score: Win {winLoss.win} Loss {winLoss.loss}</p>
       </div>
+      <button onClick={handleFocus()} className="bg-secondary text-secondary-foreground px-6 py-3 rounded hover:bg-green-700">
+        Refresh Scorecard
+      </button>
 
       <h2 className="text-xl font-bold my-4">Enter Match Scores</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
