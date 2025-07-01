@@ -121,7 +121,7 @@ const ScorePageContent = () => {
 
     fetchData();
     setDataUpdate(1)
-  }, [sessionKey, session, refreshFlag]);
+  }, [sessionKey, session, refreshFlag, dataUpdate]);
 
   useEffect(() => {
 
@@ -174,7 +174,6 @@ const ScorePageContent = () => {
       scores[index] = { ...scores[index], [field]: value };
       return { ...prev, scores };
     });
-    setDataUpdate(0)
   };
 
   const saveMatch = async () => {
@@ -193,6 +192,7 @@ const ScorePageContent = () => {
     const sessionDate = new Date(sessionData.date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    setDataUpdate(0)
 
     if (sessionDate < today && alertCount === 0) {
       alert('You cannot save data for a past date.');
