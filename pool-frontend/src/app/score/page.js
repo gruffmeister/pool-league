@@ -152,10 +152,10 @@ const ScorePageContent = () => {
 
         // Set form data
        
-          setFormData({
-            teamName: userData.team || '',
-            scores: Array(12).fill({ ...defaultScore }),
-          });
+          // setFormData({
+          //   teamName: userData.team || '',
+          //   scores: Array(12).fill({ ...defaultScore }),
+          // });
         
       } catch (err) {
         console.error('Error loading session or user/team data:', err);

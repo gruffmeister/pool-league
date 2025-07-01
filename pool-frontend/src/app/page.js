@@ -10,6 +10,8 @@ export default function HomePage() {
   const { data: session } = useSession();
   const [teamName, setTeamName] = useState(null);
   const [captain, setCaptain] = useState(null);
+  const [scoreCardLink, setScoreCardLink] = useState("/score");
+  const [teams, setTeams] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -21,6 +23,40 @@ export default function HomePage() {
       console.log(session)
     };
     fetchUser();
+  }, [session]);
+
+  useEffect(() => {
+    const fetchTeamsAndUser = async () => {
+      try {
+        if (!session?.user?.email) return;
+        const [teamsRes, userRes] = await Promise.all([
+          fetch('/api/teams/list'),
+          fetch(`/api/users/lookup?email=${session?.user?.email}`),
+        ]);
+
+        const teamsData = await teamsRes.json();
+        const userData = await userRes.json();
+
+        setTeamName(userData.team || null);
+
+        if (!Array.isArray(teamsData) || !userData?.team) {
+          console.warn('Teams or user data missing');
+          return;
+        }
+
+        setTeams(teamsData);
+
+        const userTeam = teamsData.find((team) => team.teamName === userData.team);
+        const link = '/score?sessionKey=' + userTeam.currentMatch + '&subSessionKey=' + userTeam.homeAway;
+        setScoreCardLink(link);
+      } catch (err) {
+        console.error('Error loading teams or user info', err);
+      }
+    };
+
+    if (session?.user?.email) {
+      fetchTeamsAndUser();
+    }
   }, [session]);
 
   return (
@@ -40,11 +76,19 @@ export default function HomePage() {
               View Stats
             </button>
           </Link>
-          <Link href="/match/new">
-            <button className="bg-secondary text-secondary-foreground px-6 py-3 rounded hover:bg-green-700">
-              Start New Match
-            </button>
-          </Link>
+          {captain ? 
+            <Link href="/match/new">
+              <button className="bg-secondary text-secondary-foreground px-6 py-3 rounded hover:bg-green-700">
+                Start New Match
+              </button>
+            </Link>
+             : 
+             <Link href={scoreCardLink} className="hover:underline">
+             <button className="bg-secondary text-secondary-foreground px-6 py-3 rounded hover:bg-green-700">
+                Score Card
+              </button>
+           </Link>
+          }
           {session ? (
             <div><p><strong>Logged in as:</strong> {session.user.username || session.user.email}</p>
             <Link
