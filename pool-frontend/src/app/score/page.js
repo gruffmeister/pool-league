@@ -121,7 +121,60 @@ const ScorePageContent = () => {
 
     fetchData();
     setDataUpdate(1)
-  }, [sessionKey, session, refreshFlag, dataUpdate]);
+  }, [sessionKey, session, refreshFlag]);
+
+  useEffect(() => {
+
+    if (!session || !sessionKey) return;
+
+    const fetchData = async () => {
+      if (!session?.user?.email || !sessionKey) return;
+
+      try {
+        const sessionRes = await fetch(`/api/getFormData?sessionKey=${sessionKey}`);
+        const sessionJson = await sessionRes.json();
+        setSessionData(sessionJson)
+
+        let opponentResult = null;
+
+        // Loop over all submitted subSessionKeys except this team's one
+        for (const [key, value] of Object.entries(sessionJson.matchResult || {})) {
+          if (key !== subSessionKey && value?.teamName !== teamName) {
+            opponentResult = value;
+            break; // assume only one opponent result
+          }
+        }
+
+        if (dataUpdate === 0)
+          setRefreshFlag(1)
+
+        setOpponentScores(opponentResult?.scores || Array(12).fill({ ...defaultScore }))
+
+        // Set form data
+        if (subSessionKey && sessionJson?.matchResult?.[subSessionKey]) {
+          const result = sessionJson.matchResult[subSessionKey];
+          setFormData({
+            teamName: result.teamName || userData.team || '',
+            scores: (result.scores || []).map((s) => ({
+              player: s?.player || '',
+              player2: s?.player2 || '',
+              result: s?.result || '',
+            })),
+          });
+        } else {
+          setFormData({
+            teamName: userData.team || '',
+            scores: Array(12).fill({ ...defaultScore }),
+          });
+        }
+      } catch (err) {
+        console.error('Error loading session or user/team data:', err);
+      }
+    };
+
+    fetchData();
+    setDataUpdate(1)
+  }, [dataUpdate]);
 
   useEffect(() => {
 
