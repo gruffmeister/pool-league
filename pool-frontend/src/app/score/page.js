@@ -46,6 +46,15 @@ const ScorePageContent = () => {
 
     if (!session || !sessionKey) return;
 
+    if (session && sessionKey && !sessionData.date) {
+      // Wait 1 second and reload if data isn't populated
+      const timeout = setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+  
+      return () => clearTimeout(timeout);
+    }
+
     const fetchData = async () => {
       if (!session?.user?.email || !sessionKey) return;
 
