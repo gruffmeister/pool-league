@@ -27,6 +27,7 @@ const ScorePageContent = () => {
     scores: Array(12).fill({ ...defaultScore }),
   });
   const [opponentScores, setOpponentScores] = useState(Array(12).fill({ ...defaultScore }))
+  const [tick, setTick] = useState(0);
 
   const updateQueryParam = (paramName, paramValue) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -35,6 +36,15 @@ const ScorePageContent = () => {
     router.push(newUrl, { scroll: false });
   };
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick((prev) => prev + 1); // trigger re-render
+    }, 2000); // every 2 seconds
+  
+    return () => clearInterval(interval); // cleanup
+  }, []);
+
+  
   useEffect(() => {
     const param = searchParams.get('subSessionKey');
     if (param) {
@@ -45,15 +55,6 @@ const ScorePageContent = () => {
   useEffect(() => {
 
     if (!session || !sessionKey) return;
-
-    if (session && sessionKey && !sessionData.date) {
-      // Wait 1 second and reload if data isn't populated
-      const timeout = setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-  
-      return () => clearTimeout(timeout);
-    }
 
     const fetchData = async () => {
       if (!session?.user?.email || !sessionKey) return;
