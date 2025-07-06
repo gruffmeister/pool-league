@@ -30,6 +30,8 @@ const ScorePageContent = () => {
   const [tick, setTick] = useState(0);
   const [refreshFlag, setRefreshFlag] = useState(0)
   const [dataUpdate, setDataUpdate] = useState(0)
+  const [opponentTeamName, setOpponentTeamName] = useState('');
+
 
   const [me, setMe] = useState({id: '', name: '', email: '', team: '', isCaptain: false})
 
@@ -71,15 +73,12 @@ const ScorePageContent = () => {
         const userRes = await fetch(`/api/users/lookup?email=${session.user.email}`);
         const userData = await userRes.json();
         setMe(userData)
-        console.log(userData)
         const actualTeamName = userData.team || '';
         setTeamName(actualTeamName);
 
         const allUsersRes = await fetch('/api/users/all');
         const allUsers = await allUsersRes.json();
-        console.log(allUsers)
         const sameTeamPlayers = allUsers.filter((u) => u.team === actualTeamName);
-        console.log(sameTeamPlayers)
         setTeamPlayers(sameTeamPlayers);
 
         let opponentResult = null;
@@ -88,6 +87,7 @@ const ScorePageContent = () => {
         for (const [key, value] of Object.entries(sessionJson.matchResult || {})) {
           if (key !== subSessionKey && value?.teamName !== actualTeamName) {
             opponentResult = value;
+            setOpponentTeamName(value.teamName);
             break; // assume only one opponent result
           }
         }
@@ -141,6 +141,7 @@ const ScorePageContent = () => {
         for (const [key, value] of Object.entries(sessionJson.matchResult || {})) {
           if (key !== subSessionKey && value?.teamName !== teamName) {
             opponentResult = value;
+            setOpponentTeamName(value.teamName);
             break; // assume only one opponent result
           }
         }
@@ -190,6 +191,7 @@ const ScorePageContent = () => {
             break; // assume only one opponent result
           }
         }
+        console.log(opponentResult)
 
         setOpponentScores(opponentResult?.scores || Array(12).fill({ ...defaultScore }))
 
@@ -285,11 +287,16 @@ const ScorePageContent = () => {
       <Header />
       <div>
         <h1 className="text-xl font-bold mb-4">Scorecard</h1>
-        <p>Session Key: {sessionKey}</p>
+        <p>
+          Opponent Team: {opponentTeamName ? opponentTeamName : 'Waiting for opponent to begin scoring'}
+        </p>
+        <p>Match type: {subSessionKey}</p>
+        
         <p>Date: {sessionData.date}</p>
         <p>Division: {sessionData.division}</p>
         <p>Match Type: {sessionData.matchType}</p>
         <p>Current Score: Win {winLoss.win} Loss {winLoss.loss}</p>
+        <p className="text-xs text-gray-500 italic">Match Id: {sessionKey}</p>
       </div>
       <h2 className="text-xl font-bold my-4">Enter Match Scores</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
