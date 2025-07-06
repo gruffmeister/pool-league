@@ -62,9 +62,15 @@ export default function MatchSummaryPage() {
           </h2>
           {homeResult?.submitted ? (
             homeResult.scores.map((s, i) => (
-              <div key={i} className="py-1 border-b">
-                {teamPlayers.find((p) => p.id === s.player)?.name}: {s.result}
+              <div key={i} className="py-1 border-b flex justify-between">
+                <span>
+                  {i === 4 || i === 9
+                    ? `${teamPlayers.find((p) => p.id === s.player)?.name || 'Unknown'} & ${teamPlayers.find((p) => p.id === s.player2)?.name || 'Unknown'}`
+                    : `${teamPlayers.find((p) => p.id === s.player)?.name || 'Unknown'}`}
+                </span>
+                <span className="font-semibold">{s.result}</span>
               </div>
+
           ))) : (
             <p className="italic text-gray-500">Waiting for home team to submit...</p>
           )}
@@ -80,9 +86,15 @@ export default function MatchSummaryPage() {
           </h2>
           {awayResult?.submitted ? (
             awayResult.scores.map((s, i) => (
-              <div key={i} className="py-1 border-b">
-                {teamPlayers.find((p) => p.id === s.player)?.name}: {s.result}
+              <div key={i} className="py-1 border-b flex justify-between">
+                <span>
+                  {i === 4 || i === 9
+                    ? `${teamPlayers.find((p) => p.id === s.player)?.name || 'Unknown'} & ${teamPlayers.find((p) => p.id === s.player2)?.name || 'Unknown'}`
+                    : `${teamPlayers.find((p) => p.id === s.player)?.name || 'Unknown'}`}
+                </span>
+                <span className="font-semibold">{s.result}</span>
               </div>
+
             ))
           ) : (
             <p className="italic text-gray-500">Waiting for away team to submit...</p>
