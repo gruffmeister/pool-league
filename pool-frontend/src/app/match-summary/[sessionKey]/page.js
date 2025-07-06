@@ -24,12 +24,10 @@ export default function MatchSummaryPage() {
 
         const allUsersRes = await fetch('/api/users/all');
         const allUsers = await allUsersRes.json();
-        console.log(allUsers)
         setTeamPlayers(allUsers);
 
         const res = await fetch(`/api/match-summary?sessionKey=${sessionKey}`);
         const data = await res.json();
-        console.log(data)
         setHomeResult(data.homeResult);
         setAwayResult(data.awayResult);
       } catch (err) {

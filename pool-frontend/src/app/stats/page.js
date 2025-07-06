@@ -33,10 +33,8 @@ export default function StatsPage() {
             className="px-3 py-2 border border-gray-300 rounded bg-white text-sm w-full sm:w-auto"
           >
             <option value="all">All Divisions</option>
-            <option value="1">Division 1</option>
-            <option value="2">Division 2</option>
-            <option value="3">Division 3</option>
-            <option value="4">Division 4</option>
+            <option value="Stripes">Stripes</option>
+            <option value="Spots">Spots</option>
           </select>
         </div>
 

@@ -7,6 +7,7 @@ export default function PlayerStatsTable({ division }) {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [teamPlayers, setTeamPlayers] = useState([]);
 
   const fetchPlayers = async () => {
     setLoading(true);
@@ -19,11 +20,21 @@ export default function PlayerStatsTable({ division }) {
       const res = await fetch(url);
       const data = await res.json();
 
+      const allUsersRes = await fetch('/api/users/all');
+      const allUsers = await allUsersRes.json();
+      setTeamPlayers(allUsers);
+
+
       const sorted = data
-        .map((player) => ({
-          ...player,
-          frameDiff: player.framesWon - player.framesLost,
-        }))
+        .map((player) => {
+          const user = allUsers.find((u) => u.id === player.id);
+          return {
+            ...player,
+            name: user?.name || player.id,         // fallback to ID if name missing
+            teamName: user?.team || 'No team',
+            frameDiff: player.framesWon - player.framesLost,
+          };
+        })
         .sort((a, b) => {
           if (b.matchesWon !== a.matchesWon) return b.matchesWon - a.matchesWon;
           return b.frameDiff - a.frameDiff;
