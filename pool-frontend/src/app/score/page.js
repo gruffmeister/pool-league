@@ -308,9 +308,11 @@ const ScorePageContent = () => {
         />
 
         {formData.scores.map((entry, index) => (
-          <div key={index} className="flex gap-2 items-center">
+          <div key={index} className="flex flex-col md:flex-row gap-2 items-stretch md:items-center">
+
             {(index === 4 || index === 9) ? (
               <>
+                <label className="text-xs text-gray-500 md:hidden">Player 1</label>
                 <select
                   value={entry.player || ''}
                   onChange={(e) => handleChange(index, 'player', e.target.value)}
@@ -326,6 +328,7 @@ const ScorePageContent = () => {
                     </option>
                   ))}
                 </select>
+                <label className="text-xs text-gray-500 md:hidden">Player 2</label>
                 <select
                   value={entry.player2 || ''}
                   onChange={(e) => handleChange(index, 'player2', e.target.value)}
@@ -343,6 +346,8 @@ const ScorePageContent = () => {
                 </select>
               </>
             ) : (
+              <>
+              <label className="text-xs text-gray-500 md:hidden">Player</label>
               <select
                 value={entry.player || ''}
                 onChange={(e) => handleChange(index, 'player', e.target.value)}
@@ -358,13 +363,14 @@ const ScorePageContent = () => {
                   </option>
                 ))}
               </select>
+              </>
             )}
             <select
               value={entry.result || ''}
               onChange={(e) => handleChange(index, 'result', e.target.value)}
               onBlur={handleBlur}
               onFocus={handleFocus}
-              className="w-24 p-2 border rounded"
+              className="w-full md:w-24 p-2 border rounded"
               required
             >
               <option value="" disabled={!me.isCaptain}>Result</option>
